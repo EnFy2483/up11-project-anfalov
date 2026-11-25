@@ -131,6 +131,13 @@ def create_card(product, on_add):
     add_button = QPushButton("Добавить в корзину")
     add_button.setStyleSheet(BUTTON_STYLE)
     price_layout.addWidget(add_button)
+
+    guest_note = QLabel("Войдите, чтобы заказать")
+    guest_note.setStyleSheet("color: #555555;")
+    guest_note.setVisible(not on_add.get("can_order", True))
+    price_layout.addWidget(guest_note)
+    add_button.setVisible(on_add.get("can_order", True))
+
     layout.addLayout(price_layout)
 
     def update_variant_label():
@@ -279,7 +286,11 @@ class MainWindow(QMainWindow):
         category = self.filter_combo.currentText()
         sort_order = "DESC" if self.sort_combo.currentIndex() == 1 else "ASC"
 
-        handlers = {"variants": self.db.get_variants, "add": self.add_to_cart}
+        handlers = {
+            "variants": self.db.get_variants,
+            "add": self.add_to_cart,
+            "can_order": self.role_id is not None,
+        }
         for product in self.db.get_products(search_text, category, sort_order):
             self.products_layout.addWidget(create_card(product, handlers))
         self.products_layout.addStretch()
